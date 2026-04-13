@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+firebase-admin
+google-cloud-firestore
+python-dotenv
+python-multipart
+pydantic
+torch
+openai
+scipy
+numpy
+transformers
+silabeador
+librosa
+soundfile
+azure-cognitiveservices-speech
+google-generativeai
