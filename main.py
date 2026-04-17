@@ -79,7 +79,7 @@ async def analyze_audio(data: dict = Body(...)):
     except subprocess.CalledProcessError as e:
         print(f"FFmpeg Error: {e.stderr.decode()}")
         raise HTTPException(status_code=500, detail="Audio conversion failed")
-    finally:
+    #finally:
         # 5. Clean up the file so the container doesn't fill up
-        if os.path.exists(output_path):
-            os.remove(output_path)
+        #if os.path.exists(output_path):
+            #os.remove(output_path)
