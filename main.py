@@ -63,7 +63,7 @@ async def analyze_audio(data: dict = Body(...)):
         command = [
             "ffmpeg", "-y", 
             "-i", input_path,
-            "-af", "loudnorm=I=-16:TP=-1.5:LRA=11", # Adds standard broadcast normalization
+            "-af", "highpass=f=100, lowpass=f=8000, volume=1.5", # Cleans low rumble and boosts speech
             "-ar", "16000", 
             "-ac", "1", 
             "-c:a", "pcm_s16le", 
