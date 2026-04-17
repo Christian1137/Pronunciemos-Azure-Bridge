@@ -6,6 +6,7 @@ import pronunciationChecking
 import os
 import base64
 import wave
+from fastapi.responses import FileResponse # Import this at the top
 
 app = FastAPI()
 
@@ -23,6 +24,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+
+# Add this new endpoint
+@app.get("/download-audio")
+async def download_audio():
+    # Path to the file FFmpeg created
+    file_path = os.path.join(os.getcwd(), "azure_ready.wav")
+    
+    if os.path.exists(file_path):
+        # This will trigger a download in your browser
+        return FileResponse(path=file_path, filename="debug_audio.wav", media_type='audio/wav')
+    
+    raise HTTPException(status_code=404, detail="No audio file found. Try practicing a word first.")
 
 @app.post("/analyze")
 async def analyze_audio(data: dict = Body(...)):
@@ -47,10 +62,8 @@ async def analyze_audio(data: dict = Body(...)):
         # This fixes the "Invalid Header" error regardless of what the browser sent
         command = [
             "ffmpeg", "-y", 
-            "-probesize", "32", "-analyzeduration", "0", # Skip long header analysis
             "-i", input_path,
-            "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", 
-            "-preset", "ultrafast", # Tell FFmpeg to prioritize speed
+            "-ar", "16000", "-ac", "1", "-sample_fmt", "s16", 
             output_path
         ]
         subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
