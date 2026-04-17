@@ -63,7 +63,10 @@ async def analyze_audio(data: dict = Body(...)):
         command = [
             "ffmpeg", "-y", 
             "-i", input_path,
-            "-ar", "16000", "-ac", "1", "-sample_fmt", "s16", 
+            "-af", "loudnorm=I=-16:TP=-1.5:LRA=11", # Adds standard broadcast normalization
+            "-ar", "16000", 
+            "-ac", "1", 
+            "-c:a", "pcm_s16le", 
             output_path
         ]
         subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
