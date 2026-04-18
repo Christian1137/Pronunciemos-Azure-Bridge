@@ -30,7 +30,10 @@ app.add_middleware(
 )
 
 
-
+@app.get("/")
+async def root():
+    return {"message": "Pronunciemos Azure Bridge API is running"}
+    
 # Add this new endpoint
 @app.get("/download-audio")
 async def download_audio():
