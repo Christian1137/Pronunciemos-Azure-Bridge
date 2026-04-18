@@ -7,6 +7,10 @@ import os
 import base64
 import wave
 from fastapi.responses import FileResponse # Import this at the top
+import librosa
+import soundfile as sf
+import string
+import random
 
 app = FastAPI()
 
@@ -41,7 +45,6 @@ async def download_audio():
 
 @app.post("/analyze")
 async def analyze_audio(data: dict = Body(...)):
-    # 1. Get data from payload
     sentence = data.get('sentence')
     dialect = data.get('dialect')
     base64_audio = data.get('base64_data')
@@ -49,40 +52,32 @@ async def analyze_audio(data: dict = Body(...)):
     if not base64_audio:
         raise HTTPException(status_code=400, detail="No audio data provided")
 
-    input_path = os.path.join(os.getcwd(), "upload_raw.wav")
-    output_path = os.path.join(os.getcwd(), "azure_ready.wav")
+    # Use random filenames to avoid collisions if multiple requests come in simultaneously
+    input_file = ''.join(random.choices(string.ascii_letters + string.digits, k=20)) + ".webm"
+    output_file = "tmp_" + ''.join(random.choices(string.ascii_letters + string.digits, k=20)) + ".wav"
 
     try:
-        # Save the raw data from the browser
         audio_bytes = base64.b64decode(base64_audio)
-        with open(input_path, "wb") as f:
+        with open(input_file, "wb") as f:
             f.write(audio_bytes)
 
-        # USE FFMPEG TO FORCE PCM WAV (16kHz, Mono, 16-bit)
-        # This fixes the "Invalid Header" error regardless of what the browser sent
-        command = [
-            "ffmpeg", "-y", 
-            "-i", input_path,
-            "-af", "highpass=f=100, lowpass=f=8000, volume=1.5", # Cleans low rumble and boosts speech
-            "-ar", "16000", 
-            "-ac", "1", 
-            "-c:a", "pcm_s16le", 
-            output_path
-        ]
-        subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # Match exactly what testing branch was doing
+        audio, sampling_rate = librosa.load(input_file, sr=16000, mono=True, duration=30.0)
+        sf.write(output_file, audio, 16000)
 
-        # Pass the RE-ENCODED file to Azure
         results = pronunciationChecking.correct_pronunciation_azure(
-            sentence, 
-            output_path, 
+            sentence,
+            output_file,
             dialect
         )
         return results
 
-    except subprocess.CalledProcessError as e:
-        print(f"FFmpeg Error: {e.stderr.decode()}")
-        raise HTTPException(status_code=500, detail="Audio conversion failed")
-    #finally:
-        # 5. Clean up the file so the container doesn't fill up
-        #if os.path.exists(output_path):
-            #os.remove(output_path)
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing audio: {str(e)}")
+
+    finally:
+        # Clean up temp files
+        for path in [input_file, output_file]:
+            if path and os.path.exists(path):
+                os.remove(path)
