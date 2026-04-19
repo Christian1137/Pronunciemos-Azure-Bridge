@@ -49,6 +49,7 @@ def azure_transcribe(filepath, sentence, dialect):
 	try:
 		for word in pronunciation_assessment_result.words:
 			for phoneme in word.phonemes:
+				print(f"Word: {word.word}, Phoneme: {phoneme.phoneme}, Score: {phoneme.accuracy_score}")
 				pronounced_correctly.append(True if phoneme.accuracy_score >= 80 else False)
 	except Exception as e:
 		print(e)
