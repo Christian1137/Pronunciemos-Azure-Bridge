@@ -4,6 +4,7 @@ import re
 
 # Get accuracy of each IPA symbol of correct pronunciation from Azure's Pronunciation Assessment tool
 def azure_transcribe(filepath, sentence, dialect):
+	print(f"Processing file: {filepath} with sentence: '{sentence}' and dialect: '{dialect}'")
 	speech_config = speechsdk.SpeechConfig(subscription=os.getenv("AZURE_API_KEY"), endpoint=os.getenv("AZURE_ENDPOINT"))
 	audio_config = speechsdk.audio.AudioConfig(filename=filepath)
 	lang = ""
@@ -57,6 +58,7 @@ def azure_transcribe(filepath, sentence, dialect):
 		if (hasattr(pronunciation_assessment_result, "words")):
 			for word in pronunciation_assessment_result.words:
 				for phoneme in word.phonemes:
+					print(f"Word: {word.word}, Phoneme: {phoneme.phoneme}, Score: {phoneme.accuracy_score}")
 					pronounced_correctly.append(True if phoneme.accuracy_score >= 80 else False)
 
 	return pronounced_correctly

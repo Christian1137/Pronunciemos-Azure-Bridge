@@ -64,7 +64,6 @@ async def analyze_audio(data: dict = Body(...)):
         with open(input_file, "wb") as f:
             f.write(audio_bytes)
 
-        # Use pydub to convert, matching what your teammate did
         audio = AudioSegment.from_file(input_file, format="webm")
         audio = audio.set_frame_rate(16000).set_channels(1).set_sample_width(2)
         audio.export(output_file, format="wav")
