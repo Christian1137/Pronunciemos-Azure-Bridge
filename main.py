@@ -1,5 +1,4 @@
 
-import subprocess
 from fastapi import FastAPI, Body, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import pronunciationChecking
@@ -7,7 +6,7 @@ import os
 import base64
 import wave
 from fastapi.responses import FileResponse # Import this at the top
-import librosa
+
 import soundfile as sf
 import string
 import random
