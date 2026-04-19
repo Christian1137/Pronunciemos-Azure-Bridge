@@ -11,6 +11,8 @@ import librosa
 import soundfile as sf
 import string
 import random
+from pydub import AudioSegment
+import io
 
 app = FastAPI()
 
@@ -63,16 +65,10 @@ async def analyze_audio(data: dict = Body(...)):
         with open(input_file, "wb") as f:
             f.write(audio_bytes)
 
-        # FFmpeg just for format conversion, no filters
-        command = [
-            "ffmpeg", "-y",
-            "-i", input_file,
-            "-ar", "16000",
-            "-ac", "1",
-            "-c:a", "pcm_s16le",
-            output_file
-        ]
-        subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # Use pydub to convert, matching what your teammate did
+        audio = AudioSegment.from_file(input_file, format="webm")
+        audio = audio.set_frame_rate(16000).set_channels(1).set_sample_width(2)
+        audio.export(output_file, format="wav")
 
         results = pronunciationChecking.correct_pronunciation_azure(
             sentence,
@@ -81,9 +77,6 @@ async def analyze_audio(data: dict = Body(...)):
         )
         return results
 
-    except subprocess.CalledProcessError as e:
-        print(f"FFmpeg Error: {e.stderr.decode()}")
-        raise HTTPException(status_code=500, detail="Audio conversion failed")
     except Exception as e:
         print(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing audio: {str(e)}")
