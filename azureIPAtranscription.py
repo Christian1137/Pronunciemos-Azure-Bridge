@@ -5,6 +5,7 @@ import re
 # Get accuracy of each IPA symbol of correct pronunciation from Azure's Pronunciation Assessment tool
 def azure_transcribe(filepath, sentence, dialect):
 	print(f"Processing file: {filepath} with sentence: '{sentence}' and dialect: '{dialect}'")
+
 	speech_config = speechsdk.SpeechConfig(subscription=os.getenv("AZURE_API_KEY"), endpoint=os.getenv("AZURE_ENDPOINT"))
 	audio_config = speechsdk.audio.AudioConfig(filename=filepath)
 	lang = ""
@@ -13,6 +14,8 @@ def azure_transcribe(filepath, sentence, dialect):
 	else:
 		lang = "es-MX"
 	input_sentence = sentence
+	
+
 	if dialect == "argentina":
 		# Preprocess input string to add in features of Argentinian Spanish
 		# Aspiration of s before consonants, and sheismo
@@ -33,12 +36,15 @@ def azure_transcribe(filepath, sentence, dialect):
 		input_sentence = re.sub(r'([aeiouyáéíóú])d([aeiouyáéíóú])', r'\1h\2', input_sentence)
 		input_sentence = re.sub(r'([aeiouyáéíóú])r([bcdfgjklmnpqtvwxz])', r'\1l\2', input_sentence)
 
+	json_string='{"referenceText":"' + input_sentence + '","gradingSystem":"HundredMark","granularity":"Phoneme","phonemeAlphabet":"IPA"}'
+	print(f"Reference text sent to Azure: {json_string}")
+	
 	speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, language=lang, audio_config=audio_config)
 	pronunciation_config = speechsdk.PronunciationAssessmentConfig(
 		json_string='{"referenceText":"' + input_sentence + '","gradingSystem":"HundredMark","granularity":"Phoneme","phonemeAlphabet":"IPA"}'
 		)
 	
-
+	print(f"Reference text sent to Azure: {json_string}")
 	pronunciation_config.apply_to(speech_recognizer)
 	speech_recognition_result = speech_recognizer.recognize_once()
 
