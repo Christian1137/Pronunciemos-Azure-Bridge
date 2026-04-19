@@ -30,6 +30,21 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+async def root():
+    return {"message": "Pronunciemos Azure Bridge API is running"}
+    
+# Add this new endpoint
+@app.get("/download-audio")
+async def download_audio():
+    # Path to the file FFmpeg created
+    file_path = os.path.join(os.getcwd(), "azure_ready.wav")
+    
+    if os.path.exists(file_path):
+        # This will trigger a download in your browser
+        return FileResponse(path=file_path, filename="debug_audio.wav", media_type='audio/wav')
+    
+    raise HTTPException(status_code=404, detail="No audio file found. Try practicing a word first.")
 
 @app.post("/analyze")
 async def analyze_audio(data: dict = Body(...)):
