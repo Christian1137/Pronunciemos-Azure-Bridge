@@ -52,7 +52,12 @@ async def analyze_audio(data: dict = Body(...)):
     sentence = data.get('sentence')
     dialect = data.get('dialect')
     base64_audio = data.get('base64_data')
-    print(f"base64 string: {base64_audio}")  
+    print(f"base64 string: {base64_audio}")
+    print(f"Base64 length: {len(base64_audio)}")
+    print(f"Last 10 chars: {base64_audio[-10:]}")
+    print(f"Contains +: {'+'  in base64_audio}")
+    print(f"Contains /: {'/' in base64_audio}")
+    print(f"Contains spaces: {' ' in base64_audio}")  
 
     if not base64_audio:
         raise HTTPException(status_code=400, detail="No audio data provided")
